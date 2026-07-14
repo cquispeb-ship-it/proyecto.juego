@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatos vs Perros - En Combate</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0b0c10;
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+        }
+        #ui-bar {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            display: flex;
+            justify-content: space-between;
+            background: rgba(15, 15, 25, 0.85);
+            padding: 15px 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .stats {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .hp-bar-container {
+            width: 150px;
+            height: 15px;
+            background: #333;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #555;
+        }
+        .hp-bar {
+            height: 100%;
+            background: #ef4444;
+            width: 100%;
+            transition: width 0.3s ease;
+        }
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div id="ui-bar">
+    <div class="stats">
+        <span style="font-size: 20px;" id="playerLabel">Cargando...</span>
+        <div class="hp-bar-container">
+            <div id="playerHp" class="hp-bar"></div>
+        </div>
+    </div>
+    <div style="font-size: 24px; font-weight: bold; color: #ffb703;" id="vsLabel">VS</div>
+    <div class="stats">
+        <span style="font-size: 20px;" id="enemyLabel">Esperando rival...</span>
+        <div class="hp-bar-container">
+            <div id="enemyHp" class="hp-bar" style="background: #3b82f6; width: 0%;"></div>
+        </div>
+    </div>
+</div>
+
+<canvas id="gameCanvas"></canvas>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="script-jugadores.js"></script>
+</body>
+</html>

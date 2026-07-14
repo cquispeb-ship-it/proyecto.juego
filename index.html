@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gatos vs Perros: Anime Sky Warfare</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: radial-gradient(circle, #1a1c2e 0%, #0c0d14 100%);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            width: 450px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+            text-align: center;
+        }
+        h1 {
+            color: #ffb703;
+            text-shadow: 0 0 10px rgba(255, 183, 3, 0.5);
+            margin-bottom: 20px;
+        }
+        .input-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        label {
+            font-size: 14px;
+            color: #ccc;
+            display: block;
+            margin-bottom: 5px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: none;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        input, select {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        input:focus, select:focus {
+            outline: 2px solid #ffb703;
+        }
+        button {
+            background: #ffb703;
+            color: #12131c;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #fb8500;
+        }
+        .salas-lista {
+            margin-top: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .sala-card {
+            background: rgba(255, 255, 255, 0.08);
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .sala-card button {
+            width: auto;
+            margin: 0;
+            padding: 6px 12px;
+            font-size: 14px;
+            background: #219ebc;
+            color: white;
+        }
+        .sala-card button:hover {
+            background: #023047;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🐾 Neko vs Inu 🐾<br><small style="font-size: 16px; color: #8ecae6;">Anime Sky Warfare</small></h1>
+    
+    <div class="input-group">
+        <label>Tu Nombre de Piloto:</label>
+        <input type="text" id="username" placeholder="Ej. SasukeNeko" required>
+    </div>
+
+    <div class="input-group">
+        <label>Selecciona tu Bando Anime:</label>
+        <select id="faction">
+            <option value="gato">🐱 Gato Aviador (Veloz)</option>
+            <option value="perro">🐶 Perro Aviador (Fuerte)</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>Nombre de nueva sala:</label>
+        <input type="text" id="roomName" placeholder="Ej. Batalla del Olimpo">
+    </div>
+    
+    <button onclick="crearSala()">🚀 Crear Sala de Batalla</button>
+
+    <div class="salas-lista">
+        <h3>Salas Disponibles</h3>
+        <div id="listaSalas">Cargando salas...</div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+    const SUPABASE_URL = "https://buwhrscaxqlopqmrnjiy.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_0koEgBnZ0kgqx3cYmJVH1Q_0GYHi_7x"; 
+
+    // Cambiado de "supabase" a "supabaseClient" para evitar el error de identificador ya declarado
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    // Guardar facción por defecto
+    document.getElementById('username').value = localStorage.getItem('username') || '';
+
+    async function cargarSalas() {
+        const { data: salas, error } = await supabaseClient
+            .from('salas')
+            .select('*')
+            .eq('estado', 'esperando')
+            .order('creado_en', { ascending: false });
+
+        if (error) {
+            console.error("Error al cargar salas:", error);
+            return;
+        }
+
+        const contenedor = document.getElementById('listaSalas');
+        contenedor.innerHTML = '';
+
+        if (!salas || salas.length === 0) {
+            contenedor.innerHTML = '<p style="color: #aaa; font-size: 14px;">No hay salas activas. ¡Crea una!</p>';
+            return;
+        }
+
+        salas.forEach(sala => {
+            const div = document.createElement('div');
+            div.className = 'sala-card';
+            div.innerHTML = `
+                <div style="text-align: left;">
+                    <strong style="color: #ffb703;">${sala.nombre_sala}</strong><br>
+                    <small style="color: #bbb;">Creado por: ${sala.creador}</small>
+                </div>
+                <button onclick="unirseASala('${sala.id}', 'p2')">Unirse</button>
+            `;
+            contenedor.appendChild(div);
+        });
+    }
+
+    async function crearSala() {
+        const username = document.getElementById('username').value.trim();
+        const roomName = document.getElementById('roomName').value.trim();
+        const faction = document.getElementById('faction').value;
+
+        if (!username || !roomName) {
+            alert("Por favor, escribe tu nombre y un nombre para la sala.");
+            return;
+        }
+
+        localStorage.setItem('username', username);
+        localStorage.setItem('faction', faction);
+
+        const { data, error } = await supabaseClient
+            .from('salas')
+            .insert([{ nombre_sala: roomName, creador: username, estado: 'esperando' }])
+            .select();
+
+        if (error) {
+            alert("Error al crear sala: " + error.message);
+            return;
+        }
+
+        const salaCreada = data[0];
+        // Redirigir como Jugador 1
+        unirseASala(salaCreada.id, 'p1');
+    }
+
+    function unirseASala(salaId, playerRole) {
+        const username = document.getElementById('username').value.trim();
+        const faction = document.getElementById('faction').value;
+
+        if (!username) {
+            alert("Escribe tu nombre de piloto primero.");
+            return;
+        }
+
+        localStorage.setItem('username', username);
+        localStorage.setItem('faction', faction);
+        localStorage.setItem('salaId', salaId);
+        localStorage.setItem('playerRole', playerRole); // p1 o p2
+
+        // Redirigir a la arena de combate
+        window.location.href = "jugador1.html"; 
+    }
+
+    // Suscribirse a cambios en la base de datos en tiempo real para actualizar la lista de salas automáticamente
+    supabaseClient
+        .channel('schema-db-changes')
+        .on('postgres_changes', { event: '*', schema: 'public', table: 'salas' }, () => {
+            cargarSalas();
+        })
+        .subscribe();
+
+    // Carga inicial de salas
+    cargarSalas();
+</script>
+</body>
+</html>

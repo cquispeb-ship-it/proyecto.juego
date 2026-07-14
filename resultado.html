@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fin de la Batalla</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: #0c0d14;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .result-box {
+            text-align: center;
+            background: rgba(255,255,255,0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            max-width: 400px;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 10px;
+        }
+        .victoria {
+            color: #4ad66d;
+            text-shadow: 0 0 15px rgba(74, 214, 109, 0.5);
+        }
+        .derrota {
+            color: #ef4444;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+        }
+        button {
+            background: #ffb703;
+            color: #12131c;
+            font-weight: bold;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: background 0.2s;
+            margin-top: 20px;
+        }
+        button:hover {
+            background: #fb8500;
+        }
+    </style>
+</head>
+<body>
+
+<div class="result-box">
+    <h1 id="resultTitle">...</h1>
+    <p style="font-size: 18px; color: #ccc;" id="resultDesc">El combate ha finalizado.</p>
+    <button onclick="volverAlMenu()">🏠 Volver a las Salas</button>
+</div>
+
+<script>
+    const result = localStorage.getItem('gameResult') || 'DESCONOCIDO';
+    const title = document.getElementById('resultTitle');
+    const desc = document.getElementById('resultDesc');
+
+    if (result === 'VICTORIA') {
+        title.innerText = "👑 ¡VICTORIA! 👑";
+        title.className = "victoria";
+        desc.innerText = "¡Eres el as del cielo! Derribaste el avión oponente con precisión quirúrgica.";
+    } else {
+        title.innerText = "💥 ¡DERROTA! 💥";
+        title.className = "derrota";
+        desc.innerText = "Tu avión ha sido derribado en mil pedazos. ¡Vuelve a intentarlo!";
+    }
+
+    function volverAlMenu() {
+        window.location.href = "index.html";
+    }
+</script>
+</body>
+</html>
