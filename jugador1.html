@@ -3,72 +3,105 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gatos vs Perros - En Combate</title>
+    <title>Animesky: Neko vs Inu - En Combate</title>
     <style>
         body, html {
             margin: 0;
             padding: 0;
             overflow: hidden;
-            background-color: #0b0c10;
-            font-family: 'Segoe UI', sans-serif;
-            color: white;
+            /* Fondo gamer: radial oscuro con destellos neón púrpura profundo */
+            background: radial-gradient(circle at center, #1b153a 0%, #090714 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #e0e0ff;
         }
         #ui-bar {
             position: absolute;
-            top: 10px;
-            left: 10px;
-            right: 10px;
+            top: 15px;
+            left: 15px;
+            right: 15px;
             display: flex;
             justify-content: space-between;
-            background: rgba(15, 15, 25, 0.85);
-            padding: 15px 25px;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            align-items: center;
+            /* Fondo translúcido gamer oscuro */
+            background: rgba(15, 12, 30, 0.85);
+            backdrop-filter: blur(10px);
+            padding: 15px 30px;
+            border-radius: 14px;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.15), inset 0 0 10px rgba(138, 43, 226, 0.2);
             z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            /* Borde neón cian característico */
+            border: 1px solid #00f2ff;
         }
         .stats {
             display: flex;
             align-items: center;
             gap: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(0, 242, 255, 0.1);
         }
         .hp-bar-container {
-            width: 150px;
-            height: 15px;
-            background: #333;
-            border-radius: 10px;
+            width: 180px;
+            height: 14px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 6px;
             overflow: hidden;
-            border: 1px solid #555;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.5);
         }
         .hp-bar {
             height: 100%;
-            background: #ef4444;
+            /* Vida del jugador principal con degradado neón fucsia/rojo */
+            background: linear-gradient(90deg, #ff007f, #ef4444);
             width: 100%;
-            transition: width 0.3s ease;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 0 8px rgba(255, 0, 127, 0.5);
+        }
+        /* Clase especial para la barra de vida del enemigo o rivales */
+        .enemy-hp {
+            background: linear-gradient(90deg, #3b82f6, #00f2ff) !important;
+            box-shadow: 0 0 8px rgba(0, 242, 255, 0.5) !important;
+        }
+        #vsLabel {
+            font-size: 26px;
+            font-weight: 900;
+            color: #ff007f;
+            text-shadow: 0 0 12px rgba(255, 0, 127, 0.6);
+            letter-spacing: 2px;
+            text-transform: uppercase;
         }
         canvas {
             display: block;
+            width: 100vw;
+            height: 100vh;
         }
     </style>
 </head>
 <body>
 
 <div id="ui-bar">
+    <!-- Panel del Jugador Local -->
     <div class="stats">
-        <span style="font-size: 20px;" id="playerLabel">Cargando...</span>
+        <span style="font-size: 18px; font-weight: bold; color: #ffffff;" id="playerLabel">Cargando...</span>
         <div class="hp-bar-container">
             <div id="playerHp" class="hp-bar"></div>
         </div>
     </div>
-    <div style="font-size: 24px; font-weight: bold; color: #ffb703;" id="vsLabel">VS</div>
+    
+    <!-- Indicador Central de Combate -->
+    <div id="vsLabel">VS</div>
+    
+    <!-- Panel de Rivales (Adaptable para múltiples facciones/enemigos) -->
     <div class="stats">
-        <span style="font-size: 20px;" id="enemyLabel">Esperando rival...</span>
+        <span style="font-size: 18px; font-weight: bold; color: #8a99ad;" id="enemyLabel">Esperando rival...</span>
         <div class="hp-bar-container">
-            <div id="enemyHp" class="hp-bar" style="background: #3b82f6; width: 0%;"></div>
+            <div id="enemyHp" class="hp-bar enemy-hp" style="width: 0%;"></div>
         </div>
     </div>
 </div>
 
+<!-- Lienzo de juego donde renderizarás la batalla en tiempo real -->
 <canvas id="gameCanvas"></canvas>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
