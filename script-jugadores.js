@@ -1,12 +1,21 @@
-// === 1. CONFIGURACIÓN DE SUPABASE Y LOCALSTORAGE ===
 const SUPABASE_URL = "https://buwhrscaxqlopqmrnjiy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_0koEgBnZ0kgqx3cYmJVH1Q_0GYHi_7x"; 
 
 const salaId = localStorage.getItem('salaId');
 const username = localStorage.getItem('username') || 'Piloto';
-const faction = localStorage.getItem('faction') || 'gato'; 
 const playerRole = localStorage.getItem('playerRole') || 'p1'; 
 
+// Convertimos el texto largo del localStorage ("🔮 Mago Astral...") a palabras clave simples
+let rawFaction = (localStorage.getItem('faction') || 'gato').toLowerCase();
+let faction = 'gato'; 
+
+if (rawFaction.includes('mago') || rawFaction.includes('astral')) faction = 'mago';
+else if (rawFaction.includes('perro') || rawFaction.includes('inu')) faction = 'perro';
+else if (rawFaction.includes('gato') || rawFaction.includes('neko')) faction = 'gato';
+else if (rawFaction.includes('mecha') || rawFaction.includes('robot')) faction = 'mecha';
+else if (rawFaction.includes('ninja') || rawFaction.includes('shinobi')) faction = 'ninja';
+else if (rawFaction.includes('saiyan') || rawFaction.includes('guerrero')) faction = 'saiyan';
+else if (rawFaction.includes('cyber') || rawFaction.includes('samurai')) faction = 'cyber';
 let supabaseClient; 
 let channel;
 const remotePlayers = {};
@@ -31,7 +40,6 @@ else if (faction === 'saiyan') { speedSetup = 6; colorSetup = '#ff007f'; }
 else if (faction === 'mago') { speedSetup = 5; colorSetup = '#7928ca'; }
 else if (faction === 'cyber') { speedSetup = 7; colorSetup = '#ff3333'; }
 
-// === 2. PROPIEDADES DE JUGADORES ===
 const localPlayer = {
     id: playerRole,
     name: username,
@@ -45,7 +53,6 @@ const localPlayer = {
     color: colorSetup
 };
 
-// === 3. CONEXIÓN EN RED ===
 try {
     if (SUPABASE_KEY && !SUPABASE_KEY.includes("PEGA_AQUÍ")) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
