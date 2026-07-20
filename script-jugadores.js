@@ -1,3 +1,4 @@
+// === 1. CONFIGURACIÓN DE SUPABASE Y LOCALSTORAGE ===
 const SUPABASE_URL = "https://buwhrscaxqlopqmrnjiy.supabase.co";
 const SUPABASE_KEY = "sb_publishable_0koEgBnZ0kgqx3cYmJVH1Q_0GYHi_7x"; 
 
@@ -5,7 +6,7 @@ const salaId = localStorage.getItem('salaId');
 const username = localStorage.getItem('username') || 'Piloto';
 const playerRole = localStorage.getItem('playerRole') || 'p1'; 
 
-// Convertimos el texto largo del localStorage ("🔮 Mago Astral...") a palabras clave simples
+// === REPARACIÓN DE FACCIÓN (DEBE IR ANTES DE CREAR AL JUGADOR) ===
 let rawFaction = (localStorage.getItem('faction') || 'gato').toLowerCase();
 let faction = 'gato'; 
 
@@ -16,6 +17,7 @@ else if (rawFaction.includes('mecha') || rawFaction.includes('robot')) faction =
 else if (rawFaction.includes('ninja') || rawFaction.includes('shinobi')) faction = 'ninja';
 else if (rawFaction.includes('saiyan') || rawFaction.includes('guerrero')) faction = 'saiyan';
 else if (rawFaction.includes('cyber') || rawFaction.includes('samurai')) faction = 'cyber';
+
 let supabaseClient; 
 let channel;
 const remotePlayers = {};
@@ -40,10 +42,11 @@ else if (faction === 'saiyan') { speedSetup = 6; colorSetup = '#ff007f'; }
 else if (faction === 'mago') { speedSetup = 5; colorSetup = '#7928ca'; }
 else if (faction === 'cyber') { speedSetup = 7; colorSetup = '#ff3333'; }
 
+// === 2. PROPIEDADES DE JUGADORES ===
 const localPlayer = {
     id: playerRole,
     name: username,
-    faction: faction,
+    faction: faction, // Ahora sí guardará 'mago', 'saiyan', etc. ya limpio.
     x: playerRole === 'p1' ? 100 : window.innerWidth - 150,
     y: window.innerHeight / 2,
     size: 50,
