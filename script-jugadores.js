@@ -1,6 +1,6 @@
 // === 1. CONFIGURACIÓN DE SUPABASE Y LOCALSTORAGE ===
 const SUPABASE_URL = "https://buwhrscaxqlopqmrnjiy.supabase.co";
-// ⚠️ REEMPLAZA ESTE TEXTO CON TU CLAVE REAL COMPLETA
+
 const SUPABASE_KEY = "sb_publishable_0koEgBnZ0kgqx3cYmJVH1Q_0GYHi_7x"; 
 
 const salaId = localStorage.getItem('salaId');
