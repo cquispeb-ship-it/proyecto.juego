@@ -1,24 +1,35 @@
 // === 1. CONFIGURACIÓN DE SUPABASE Y LOCALSTORAGE ===
 const SUPABASE_URL = "https://buwhrscaxqlopqmrnjiy.supabase.co";
-
 const SUPABASE_KEY = "sb_publishable_0koEgBnZ0kgqx3cYmJVH1Q_0GYHi_7x"; 
 
 const salaId = localStorage.getItem('salaId');
 const username = localStorage.getItem('username') || 'Piloto';
-const faction = localStorage.getItem('faction') || 'gato'; // gato o perro
-const playerRole = localStorage.getItem('playerRole') || 'p1'; // p1 o p2
+const faction = localStorage.getItem('faction') || 'gato'; 
+const playerRole = localStorage.getItem('playerRole') || 'p1'; 
 
 let supabaseClient; 
 let channel;
 const remotePlayers = {};
-const bullets = []; // Mis balas locales
-const remoteBullets = []; // Balas del oponente
+const bullets = []; 
+const remoteBullets = []; 
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
+
+// Configurar estadísticas únicas por facción gamer
+let speedSetup = 5;
+let colorSetup = '#00f2ff';
+
+if (faction === 'gato') { speedSetup = 7; colorSetup = '#ffb703'; }
+else if (faction === 'perro') { speedSetup = 5; colorSetup = '#219ebc'; }
+else if (faction === 'mecha') { speedSetup = 4; colorSetup = '#00ffcc'; }
+else if (faction === 'ninja') { speedSetup = 8; colorSetup = '#666666'; }
+else if (faction === 'saiyan') { speedSetup = 6; colorSetup = '#ff007f'; }
+else if (faction === 'mago') { speedSetup = 5; colorSetup = '#7928ca'; }
+else if (faction === 'cyber') { speedSetup = 7; colorSetup = '#ff3333'; }
 
 // === 2. PROPIEDADES DE JUGADORES ===
 const localPlayer = {
@@ -28,10 +39,10 @@ const localPlayer = {
     x: playerRole === 'p1' ? 100 : window.innerWidth - 150,
     y: window.innerHeight / 2,
     size: 50,
-    speed: faction === 'gato' ? 7 : 5, // Gato vuela más rápido
+    speed: speedSetup, 
     hp: 100,
     maxHp: 100,
-    color: faction === 'gato' ? '#ffb703' : '#219ebc'
+    color: colorSetup
 };
 
 // === 3. CONEXIÓN EN RED ===
@@ -39,7 +50,6 @@ try {
     if (SUPABASE_KEY && !SUPABASE_KEY.includes("PEGA_AQUÍ")) {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
         
-        // Canal dinámico único para la sala actual
         channel = supabaseClient.channel(`sala-${salaId}`, { 
             config: { broadcast: { self: false } } 
         });
@@ -61,7 +71,6 @@ try {
           })
           .subscribe((status) => {
               if (status === 'SUBSCRIBED') {
-                  // Notificar presencia al entrar
                   channel.send({ type: 'broadcast', event: 'movimiento', payload: localPlayer });
               }
           });
@@ -70,78 +79,104 @@ try {
     console.error("Error de conexión:", e);
 }
 
-// === 4. DISEÑO DE PERSONAJES ANIME (DIBUJO VECTORIAL) ===
+// === 4. DISEÑO DE PERSONAJES ANIME MODIFICADO PARA TODAS LAS FACCIONES ===
 function dibujarAvionAnime(ctx, x, y, size, bando, name) {
     ctx.save();
     ctx.translate(x + size/2, y + size/2);
     
-    // Si es jugador 2, mirará hacia la izquierda
     if (playerRole === 'p2' && bando === faction || playerRole === 'p1' && bando !== faction) {
         ctx.scale(-1, 1);
     }
 
     if (bando === 'gato') {
-        // Cabina/Cuerpo Avión Neko
         ctx.fillStyle = '#f8ad9d';
-        ctx.beginPath();
-        ctx.ellipse(0, 0, 25, 15, 0, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.beginPath(); ctx.ellipse(0, 0, 25, 15, 0, 0, Math.PI * 2); ctx.fill();
 
-        // Orejas de gato anime en el fuselaje
         ctx.fillStyle = '#f4978e';
-        ctx.beginPath();
-        ctx.moveTo(-10, -12); ctx.lineTo(-15, -25); ctx.lineTo(0, -14);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(5, -12); ctx.lineTo(0, -25); ctx.lineTo(12, -12);
-        ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, -12); ctx.lineTo(-15, -25); ctx.lineTo(0, -14); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(5, -12); ctx.lineTo(0, -25); ctx.lineTo(12, -12); ctx.fill();
 
-        // Alas propulsoras amarillas
         ctx.fillStyle = '#ffb703';
-        ctx.beginPath();
-        ctx.moveTo(-10, 0); ctx.lineTo(-30, -35); ctx.lineTo(-20, -35);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(-10, 0); ctx.lineTo(-30, 35); ctx.lineTo(-20, 35);
-        ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-30, -35); ctx.lineTo(-20, -35); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-10, 0); ctx.lineTo(-30, 35); ctx.lineTo(-20, 35); ctx.fill();
 
-        // Ojitos anime tiernos
-        ctx.fillStyle = '#000';
-        ctx.beginPath(); ctx.arc(10, -3, 3, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = '#fff';
-        ctx.beginPath(); ctx.arc(11, -4, 1.2, 0, Math.PI * 2); ctx.fill();
-    } else {
-        // Avión Militar Perro (Inu)
+        ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(10, -3, 3, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(11, -4, 1.2, 0, Math.PI * 2); ctx.fill();
+
+    } else if (bando === 'perro') {
         ctx.fillStyle = '#8ecae6';
-        ctx.beginPath();
-        ctx.rect(-20, -15, 40, 30);
-        ctx.fill();
+        ctx.beginPath(); ctx.rect(-20, -15, 40, 30); ctx.fill();
 
-        // Nariz del avión redondeada
         ctx.fillStyle = '#219ebc';
-        ctx.beginPath();
-        ctx.arc(20, 0, 15, -Math.PI/2, Math.PI/2);
-        ctx.fill();
+        ctx.beginPath(); ctx.arc(20, 0, 15, -Math.PI/2, Math.PI/2); ctx.fill();
 
-        // Orejas caídas de cachorro
         ctx.fillStyle = '#023047';
-        ctx.beginPath();
-        ctx.ellipse(-15, 0, 8, 20, Math.PI/6, 0, Math.PI*2);
-        ctx.fill();
+        ctx.beginPath(); ctx.ellipse(-15, 0, 8, 20, Math.PI/6, 0, Math.PI*2); ctx.fill();
 
-        // Alas de avión caza pesadas
         ctx.fillStyle = '#023047';
+        ctx.beginPath(); ctx.moveTo(-5, -15); ctx.lineTo(-15, -45); ctx.lineTo(5, -15); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-5, 15); ctx.lineTo(-15, 45); ctx.lineTo(5, 15); ctx.fill();
+
+    } else if (bando === 'mecha') {
+        // NAVE ROBÓTICA MECHA (Láser y Neón Cian)
+        ctx.fillStyle = '#1f2d3d';
+        ctx.strokeStyle = '#00ffcc';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-5, -15); ctx.lineTo(-15, -45); ctx.lineTo(5, -15);
-        ctx.fill();
+        ctx.moveTo(-25, -15); ctx.lineTo(25, 0); ctx.lineTo(-25, 15); ctx.lineTo(-15, 0);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        // Propulsores traseros neón
+        ctx.fillStyle = '#00ffcc';
+        ctx.fillRect(-22, -6, 5, 12);
+
+    } else if (bando === 'ninja') {
+        // SHINOBI DE LAS NUBES (Sigilo Gris Oscuro y Shuriken)
+        ctx.fillStyle = '#333333';
+        ctx.strokeStyle = '#6666ff';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(0, 0, 16, 0, Math.PI*2); ctx.fill(); ctx.stroke();
+        // Cintas de la máscara ninja
+        ctx.fillStyle = '#6666ff';
+        ctx.fillRect(-25, -4, 10, 4);
+        ctx.fillRect(-23, 2, 10, 4);
+
+    } else if (bando === 'saiyan') {
+        // GUERRERO SAIYAJIN (Aura de Energía Neón Fucsia/Dorado)
+        ctx.shadowColor = '#ff007f';
+        ctx.shadowBlur = 15;
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); ctx.moveTo(-15, -20); ctx.lineTo(25, 0); ctx.lineTo(-15, 20); ctx.closePath(); ctx.fill();
+        // Pelo puntiagudo/Aura
+        ctx.fillStyle = '#ffb703';
+        ctx.beginPath(); ctx.moveTo(-15, -15); ctx.lineTo(-30, 0); ctx.lineTo(-15, 15); ctx.fill();
+        ctx.shadowBlur = 0; // Resetear sombras para rendimiento
+
+    } else if (bando === 'mago') {
+        // MAGO ASTRAL (Cuerpo de Cristal Púrpura)
+        ctx.fillStyle = '#3a1d5d';
+        ctx.strokeStyle = '#bd93f9';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(-5, 15); ctx.lineTo(-15, 45); ctx.lineTo(5, 15);
-        ctx.fill();
+        ctx.moveTo(0, -22); ctx.lineTo(20, 0); ctx.lineTo(0, 22); ctx.lineTo(-20, 0);
+        ctx.closePath(); ctx.fill(); ctx.stroke();
+        // Núcleo brillante esfera mágica
+        ctx.fillStyle = '#ff79c6';
+        ctx.beginPath(); ctx.arc(0, 0, 7, 0, Math.PI*2); ctx.fill();
+
+    } else if (bando === 'cyber') {
+        // CYBER SAMURÁI (Cazador Tecnológico Rojo y Negro)
+        ctx.fillStyle = '#111111';
+        ctx.strokeStyle = '#ff3333';
+        ctx.lineWidth = 2;
+        ctx.fillRect(-20, -10, 35, 20);
+        // Filas angulares/Cuchillas de plasma traseras
+        ctx.fillStyle = '#ff3333';
+        ctx.beginPath(); ctx.moveTo(-5, -10); ctx.lineTo(-25, -25); ctx.lineTo(-15, -10); ctx.fill();
+        ctx.beginPath(); ctx.moveTo(-5, 10); ctx.lineTo(-25, 25); ctx.lineTo(-15, 10); ctx.fill();
     }
 
     ctx.restore();
 
-    // Dibujar Nombre sobre el avión
     ctx.fillStyle = '#ffffff';
     ctx.font = 'bold 14px sans-serif';
     ctx.textAlign = 'center';
@@ -153,22 +188,28 @@ const keys = {};
 window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-// Disparar con Clic Izquierdo
 window.addEventListener('mousedown', (e) => {
     if (e.button === 0) {
-        const angle = playerRole === 'p1' ? 0 : Math.PI; // p1 dispara a la derecha, p2 a la izquierda
+        // Asignar colores de balas personalizados según la facción
+        let bulletColor = '#ffb703';
+        if (faction === 'perro') bulletColor = '#00f2ff';
+        else if (faction === 'mecha') bulletColor = '#00ffcc';
+        else if (faction === 'ninja') bulletColor = '#a0a0a0';
+        else if (faction === 'saiyan') bulletColor = '#ff007f';
+        else if (faction === 'mago') bulletColor = '#bd93f9';
+        else if (faction === 'cyber') bulletColor = '#ff3333';
+
         const bullet = {
             id: Math.random().toString(),
             x: localPlayer.x + localPlayer.size/2,
             y: localPlayer.y + localPlayer.size/2,
-            vx: playerRole === 'p1' ? 12 : -12,
+            vx: playerRole === 'p1' ? 14 : -14, // Balas un poco más veloces y competitivas
             vy: 0,
-            color: faction === 'gato' ? '#ffb703' : '#e63946'
+            color: bulletColor
         };
         
         bullets.push(bullet);
 
-        // Enviar disparo a través de la red
         if (channel) {
             channel.send({ type: 'broadcast', event: 'disparo', payload: bullet });
         }
@@ -182,15 +223,19 @@ function actualizarUI() {
     const barLocal = document.getElementById('playerHp');
     const barEnemigo = document.getElementById('enemyHp');
 
-    labelLocal.innerText = `${faction === 'gato' ? '🐱' : '🐶'} ${localPlayer.name}`;
+    // Mapear emojis para la barra superior
+    const emojis = { gato: '🐱', perro: '🐶', mecha: '🤖', ninja: '🥷', saiyan: '🔥', mago: '🔮', cyber: '⚡' };
+    const miEmoji = emojis[faction] || '🎮';
+
+    labelLocal.innerText = `${miEmoji} ${localPlayer.name}`;
     barLocal.style.width = `${localPlayer.hp}%`;
 
-    // Buscar si hay rival conectado
     const rivalId = playerRole === 'p1' ? 'p2' : 'p1';
     const rival = remotePlayers[rivalId];
 
     if (rival) {
-        labelEnemigo.innerText = `${rival.faction === 'gato' ? '🐱' : '🐶'} ${rival.name}`;
+        const rivalEmoji = emojis[rival.faction] || '🎮';
+        labelEnemigo.innerText = `${rivalEmoji} ${rival.name}`;
         barEnemigo.style.width = `${rival.hp}%`;
     }
 }
@@ -198,7 +243,6 @@ function actualizarUI() {
 // === 7. CONDICIONES DE VICTORIA Y DERROTA ===
 function comprobarFinDeJuego() {
     if (localPlayer.hp <= 0) {
-        // Enviar señal final y guardar derrota
         localStorage.setItem('gameResult', 'DERROTA');
         window.location.href = "resultado.html";
     }
@@ -217,19 +261,16 @@ function comprobarVictoria() {
 function update() {
     let moved = false;
     
-    // Movimiento
     if (keys['w'] || keys['arrowup']) { localPlayer.y -= localPlayer.speed; moved = true; }
     if (keys['s'] || keys['arrowdown']) { localPlayer.y += localPlayer.speed; moved = true; }
     if (keys['a'] || keys['arrowleft']) { localPlayer.x -= localPlayer.speed; moved = true; }
     if (keys['d'] || keys['arrowright']) { localPlayer.x += localPlayer.speed; moved = true; }
 
-    // Limites de pantalla
-    if (localPlayer.y < 80) localPlayer.y = 80; // No tapar barra de arriba
+    if (localPlayer.y < 90) localPlayer.y = 90; 
     if (localPlayer.y > canvas.height - localPlayer.size) localPlayer.y = canvas.height - localPlayer.size;
     if (localPlayer.x < 0) localPlayer.x = 0;
     if (localPlayer.x > canvas.width - localPlayer.size) localPlayer.x = canvas.width - localPlayer.size;
 
-    // Actualizar mis balas y detectar colisiones en el rival
     const rivalId = playerRole === 'p1' ? 'p2' : 'p1';
     const rival = remotePlayers[rivalId];
 
@@ -237,23 +278,19 @@ function update() {
         const b = bullets[i];
         b.x += b.vx;
 
-        // Si mi bala golpea al enemigo remoto
         if (rival && b.x > rival.x && b.x < rival.x + rival.size && b.y > rival.y && b.y < rival.y + rival.size) {
             bullets.splice(i, 1);
-            // Avisar por red que le quitamos 10 HP al oponente
             if (channel) {
                 channel.send({ type: 'broadcast', event: 'danio', payload: { targetId: rivalId, amount: 10 } });
             }
             continue;
         }
 
-        // Limpiar balas fuera de pantalla
         if (b.x < 0 || b.x > canvas.width) {
             bullets.splice(i, 1);
         }
     }
 
-    // Actualizar balas remotas (gráficamente)
     for (let i = remoteBullets.length - 1; i >= 0; i--) {
         const rb = remoteBullets[i];
         rb.x += rb.vx;
@@ -262,7 +299,6 @@ function update() {
         }
     }
 
-    // Transmitir posición y estado
     if (moved && channel) {
         channel.send({ type: 'broadcast', event: 'movimiento', payload: localPlayer });
     }
@@ -274,33 +310,35 @@ function update() {
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    // Fondo Espacial Anime de cuadrículas futuristas
-    ctx.strokeStyle = '#1f1f2e';
+    // Fondo Gamer de cuadrícula de neón de alta tecnología
+    ctx.strokeStyle = 'rgba(0, 242, 255, 0.07)';
     ctx.lineWidth = 1;
-    for (let x = 0; x < canvas.width; x += 50) {
+    for (let x = 0; x < canvas.width; x += 60) {
         ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
     }
-    for (let y = 0; y < canvas.height; y += 50) {
+    for (let y = 0; y < canvas.height; y += 60) {
         ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
     }
 
-    // Dibujar mis balas (Proyectiles de Energía)
+    // Dibujar mis balas (Proyectiles láser de neón)
     bullets.forEach(b => {
         ctx.fillStyle = b.color;
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, 6, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.shadowColor = b.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(b.x, b.y, 6, 0, Math.PI * 2); ctx.fill();
     });
+    ctx.shadowBlur = 0; // Limpiar sombra
 
     // Dibujar balas enemigas
     remoteBullets.forEach(rb => {
         ctx.fillStyle = rb.color;
-        ctx.beginPath();
-        ctx.arc(rb.x, rb.y, 6, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.shadowColor = rb.color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath(); ctx.arc(rb.x, rb.y, 6, 0, Math.PI * 2); ctx.fill();
     });
+    ctx.shadowBlur = 0;
 
-    // Dibujar jugador local (Gato o Perro)
+    // Dibujar jugador local
     dibujarAvionAnime(ctx, localPlayer.x, localPlayer.y, localPlayer.size, localPlayer.faction, localPlayer.name);
 
     // Dibujar rivales remotos
@@ -318,5 +356,4 @@ function loop() {
     requestAnimationFrame(loop);
 }
 
-// Iniciar Loop del juego
 loop();
